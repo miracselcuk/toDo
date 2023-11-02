@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(uuid())
+  username String @unique
+  email String @unique
+  password String 
+  tasks Task[]
+  friends User[] @relation("friends")
+  friendOf User[] @relation("friends")
+  sentRequests friendRequest[] @relation("sentRequests")
+  receivedRequests friendRequest[] @relation("receivedRequests")
+}
+
+model Task {
+  id Int @id @default(autoincrement())
+  title String
+  description String?
+  owner User @relation(fields: [ownerId], references: [id])
+  ownerId String
+  completed Boolean @default(false)
+  createdAt DateTime @default(now())
+  completedAt DateTime?
+}
+
+model friendRequest {
+  id Int @id @default(autoincrement())
+  from User @relation("sentRequests", fields: [fromID], references: [id])
+  fromID String
+  to User @relation("receivedRequests", fields: [toID], references: [id])
+  toID String
+  status String // PENDING, ACCEPTED, REJECTED
+  fromUsername String
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id Int @id @default(autoincrement())
+  message String
+  time DateTime @default(now())
+  seen Boolean @default(false)
+}
